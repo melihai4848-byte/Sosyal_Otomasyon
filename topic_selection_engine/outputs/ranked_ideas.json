@@ -1,0 +1,51 @@
+[
+  {
+    "rank": 1,
+    "canonical_topic": "almanya_yasam_maliyeti",
+    "final_score": 84.65,
+    "title": "Almanya'da 2026'da gecinmek icin kac Euro gerekiyor?",
+    "target_audience": "future migrants",
+    "why_now": [
+      "Bu konu 3 farkli sinyalde tekrar etti.",
+      "Tazelik skoru 88.5 oldugu icin ilgi hala sicak.",
+      "Izleyici acisi net: pahali"
+    ],
+    "hooks": [
+      "Yasam konusunda insanlar yanlis seye mi odaklaniyor?",
+      "Almanya hayalindeki en buyuk risk aslinda 2500 olabilir.",
+      "Bu karari vermeden once herkesin kacirdigi ayrinti ne?"
+    ],
+    "angle": "Gercek hayattaki karar baskisini, rakam + deneyim + karsilastirma ile anlat.",
+    "risks": [
+      "Veri hizla eskiyebilir; yayin tarihini acikca belirtmek gerekir.",
+      "Kisisel deneyim ile genellemeyi dikkatli ayirmak gerekir."
+    ],
+    "next_action": "Bu konu icin once yasam odakli veri ve ornekler topla, sonra thumbnail acisini test et.",
+    "format": "long",
+    "source_count": 3,
+    "scores": {
+      "trend_score": 86.0,
+      "audience_fit_score": 83.0,
+      "channel_fit_score": 81.0,
+      "novelty_score": 74.0,
+      "production_ease_score": 84.0,
+      "hook_potential_score": 89.0,
+      "monetization_score": 82.0
+    },
+    "supporting_keywords": [
+      "yasam",
+      "maliyeti",
+      "market",
+      "fatura"
+    ],
+    "audiences": [
+      "future_migrants",
+      "workers"
+    ],
+    "emotion_triggers": [
+      "fear",
+      "comparison",
+      "curiosity"
+    ]
+  }
+]

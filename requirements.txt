@@ -1,0 +1,26 @@
+# Core runtime
+requests
+python-dotenv
+
+# Local AI / media processing
+faster-whisper
+onnxruntime-genai
+
+# LLM providers actually used by the codebase
+google-genai
+groq
+huggingface-hub
+
+# Structured config / models
+pydantic>=2,<3
+PyYAML>=6,<7
+
+# Google / YouTube APIs
+google-auth
+google-auth-oauthlib
+google-api-python-client
+google-auth-httplib2
+
+# Notes:
+# - Ollama is used over HTTP via requests, so the `ollama` Python package is not required.
+# - FFmpeg / ffprobe are required system binaries for some video modules, but they are not pip packages.

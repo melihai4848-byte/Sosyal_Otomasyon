@@ -1,0 +1,16 @@
+[
+  {
+    "id": "yt-local-1",
+    "title": "Almanya'da tek maasla gecinmek mumkun mu?",
+    "description": "Kira, market, fatura ve ulasim giderlerini topluyoruz.",
+    "comments": [
+      "2500 euro yetiyor mu?",
+      "Berlin ve Dortmund farki nedir?"
+    ],
+    "published_at": "2026-03-20T10:00:00+00:00",
+    "url": "https://youtube.example/local-1",
+    "views": 12000,
+    "likes": 800,
+    "comments_count": 125
+  }
+]

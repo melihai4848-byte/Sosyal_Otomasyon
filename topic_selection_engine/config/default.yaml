@@ -1,0 +1,60 @@
+niche: "Dynamic niche will be inferred from the configured YouTube channel when possible."
+target_audiences: []
+niche_keywords: []
+channel_strength_topics: []
+easy_topic_keywords: []
+monetizable_keywords: []
+compare_keywords:
+  - "vs"
+  - "compare"
+  - "karşılaştır"
+  - "mi yoksa"
+  - "hangisi"
+output_dir: "./out"
+sources:
+  youtube:
+    enabled: true
+    use_mock: true
+    input_paths: []
+    title_field: "title"
+    text_fields: ["text", "description", "comments"]
+    date_field: "published_at"
+    url_field: "url"
+    id_field: "id"
+    metadata_fields: ["views", "likes", "comments", "comment_count", "comments_count", "ctr"]
+  reddit:
+    enabled: true
+    use_mock: true
+    input_paths: []
+    title_field: "title"
+    text_fields: ["text", "body", "comments"]
+    date_field: "published_at"
+    url_field: "url"
+    id_field: "id"
+    metadata_fields: ["upvotes", "comments", "comment_count", "comments_count", "awards"]
+  channel:
+    enabled: true
+    use_mock: true
+    input_paths: []
+    title_field: "title"
+    text_fields: ["text", "description", "comments"]
+    date_field: "published_at"
+    url_field: "url"
+    id_field: "id"
+    metadata_fields: ["views", "ctr", "avg_view_duration", "comments", "comment_count", "comments_count"]
+llm:
+  enabled: true
+  provider: "AUTO"
+  model_name: ""
+  max_ideas: 10
+ranking_weights:
+  trend: 0.25
+  audience_fit: 0.20
+  channel_fit: 0.20
+  novelty: 0.10
+  production_ease: 0.10
+  hook_potential: 0.10
+  monetization: 0.05
+scoring_threshold: 40.0
+freshness_half_life_days: 14
+top_n: 10

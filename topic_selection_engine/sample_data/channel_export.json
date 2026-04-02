@@ -1,0 +1,16 @@
+[
+  {
+    "id": "ch-local-1",
+    "title": "Almanya'da ilk ay masraflari",
+    "description": "Tasindiktan sonraki ilk 30 gunde gider kalemleri.",
+    "comments": [
+      "Anmeldung ve depozito videosu gelsin",
+      "Is bulma sureci de ilgimi cekiyor"
+    ],
+    "published_at": "2026-01-15T09:00:00+00:00",
+    "url": "https://channel.example/local-1",
+    "views": 54000,
+    "ctr": 7.3,
+    "avg_view_duration": 41.2
+  }
+]

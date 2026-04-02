@@ -1,0 +1,36 @@
+{
+  "input_root": "input/youtube_uploads",
+  "success_root": "success/youtube_uploaded",
+  "failed_root": "failed/youtube_failed",
+  "state_file": "state/youtube_upload_state.json",
+  "lock_dir": "state/youtube_locks",
+  "log_file": "logs/youtube_draft_uploader.log",
+  "preferred_metadata_language": "Türkçe",
+  "allow_scheduled_publish": false,
+  "move_successful_folders": true,
+  "move_failed_folders": true,
+  "open_browser_for_oauth": true,
+  "oauth": {
+    "client_secret_file": "00_Inputs/oauth/google_client_secret.json",
+    "token_file": "00_Inputs/oauth/youtube_draft_upload_token.json"
+  },
+  "watch": {
+    "poll_interval_seconds": 30
+  },
+  "retry": {
+    "max_attempts": 4,
+    "initial_delay_seconds": 5,
+    "max_delay_seconds": 60
+  },
+  "defaults": {
+    "privacyStatus": "private",
+    "categoryId": "22",
+    "defaultLanguage": "tr",
+    "defaultAudioLanguage": "tr",
+    "madeForKids": false,
+    "selfDeclaredMadeForKids": false,
+    "embeddable": true,
+    "license": "youtube",
+    "publicStatsViewable": true
+  }
+}

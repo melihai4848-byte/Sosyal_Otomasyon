@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # YouTube Otomasyon v2
 
 Uzun videolardan altyazi, YouTube metadata, analiz raporlari ve Instagram icerikleri ureten moduler bir sosyal medya otomasyon sistemi.
@@ -222,3 +223,7 @@ Ana menude bos secim yapildiginda:
 ## Lisans / Ic Not
 
 Bu repo proje ici kullanim mantigiyla yapilandirilmistir. Ortam degiskenleri, OAuth dosyalari ve API anahtarlari repoya eklenmemelidir.
+=======
+# youtube-automation
+AI-powered social media automation pipeline for long-form video production. It generates Turkish subtitles, grammar fixes, multilingual translations, video analysis, trim suggestions, thumbnails, B-roll ideas, metadata, carousel/reels/story concepts, and music prompts through a modular, end-to-end workflow.
+>>>>>>> origin/main

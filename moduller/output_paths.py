@@ -79,6 +79,27 @@ OUTPUT_KEY_GROUPS = {
     "reels_creator_report": "tools",
 }
 
+_YOUTUBE_TXT_SUBDIR_BY_KEY = {
+    "video_critic": "05_Analysis",
+    "hook_rewrite": "05_Analysis",
+    "trim_suggestions": "05_Analysis",
+    "broll": "03_B-Rolls",
+    "music_prompts": "04_Musics",
+    "main_video_thumbnails": "02_Thumbnails",
+}
+
+_YOUTUBE_TXT_SUBDIR_BY_FILENAME = {
+    TXT_OUTPUT_NAMES[key]: subdir
+    for key, subdir in _YOUTUBE_TXT_SUBDIR_BY_KEY.items()
+}
+_YOUTUBE_TXT_SUBDIR_BY_FILENAME.update(
+    {
+        "YT-Metadata_TR.txt": "01_Metadata",
+        "YT-Metadata_EN.txt": "01_Metadata",
+        "YT-Metadata_DE.txt": "01_Metadata",
+    }
+)
+
 
 JSON_CACHE_DIR = ROOT_JSON_CACHE_DIR
 
@@ -107,13 +128,29 @@ def output_group_dir(group: str) -> Path:
     return path
 
 
+def _group_subdir_path(group: str, subdir: str) -> Path:
+    path = output_group_dir(group) / subdir
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _grouped_txt_subdir(group: str, filename: str) -> str | None:
+    clean_name = Path(filename).name
+    if group != "youtube" or clean_name != filename:
+        return None
+    return _YOUTUBE_TXT_SUBDIR_BY_FILENAME.get(clean_name)
+
+
 def json_cache_dir(group: str) -> Path:
-    path = output_group_dir(group) / "_json_cache"
+    path = ROOT_JSON_CACHE_DIR
     path.mkdir(parents=True, exist_ok=True)
     return path
 
 
 def grouped_output_path(group: str, filename: str) -> Path:
+    subdir = _grouped_txt_subdir(group, filename)
+    if subdir:
+        return _group_subdir_path(group, subdir) / filename
     return output_group_dir(group) / filename
 
 
@@ -145,6 +182,11 @@ def _candidate_search_dirs(groups: Iterable[str] | None = None, include_json_cac
 
     for group in ordered_groups:
         dirs.append(output_group_dir(group))
+        if group == "youtube":
+            for subdir in dict.fromkeys(_YOUTUBE_TXT_SUBDIR_BY_FILENAME.values()):
+                candidate = output_group_dir(group) / subdir
+                if candidate.exists():
+                    dirs.append(candidate)
         if include_json_cache:
             dirs.append(json_cache_dir(group))
 
@@ -310,7 +352,21 @@ def _route_legacy_file(path: Path) -> Path | None:
 def cleanup_hidden_outputs() -> None:
     for group in GROUP_DIR_NAMES:
         output_group_dir(group)
-        json_cache_dir(group)
+    ROOT_JSON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    for group in GROUP_DIR_NAMES:
+        legacy_cache_dir = output_group_dir(group) / "_json_cache"
+        if legacy_cache_dir.exists():
+            _merge_directory(legacy_cache_dir, ROOT_JSON_CACHE_DIR)
+
+    for group in GROUP_DIR_NAMES:
+        base_dir = output_group_dir(group)
+        for child in list(base_dir.iterdir()):
+            if not child.is_file():
+                continue
+            hedef = grouped_output_path(group, child.name)
+            if hedef != child:
+                _move_file_to_target(child, hedef)
 
     for path in OUTPUTS_DIR.iterdir():
         if path.name in set(GROUP_DIR_NAMES.values()) | {"_json_cache"}:

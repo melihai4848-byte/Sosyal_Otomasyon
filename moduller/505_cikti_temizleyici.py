@@ -7,7 +7,7 @@ from typing import Any
 
 from moduller.config import BASE_DIR, OUTPUTS_DIR
 from moduller.logger import get_logger
-from moduller.output_paths import GROUP_DIR_NAMES, ROOT_JSON_CACHE_DIR, json_cache_dir, output_group_dir
+from moduller.output_paths import GROUP_DIR_NAMES, ROOT_JSON_CACHE_DIR, output_group_dir
 
 logger = get_logger("output_cleaner")
 AYIRICI = "=" * 60
@@ -126,7 +126,7 @@ def _confirm_cleanup(profile_key: str) -> bool:
         for group in output_groups:
             print(f"  * {GROUP_DIR_NAMES[group]}")
     if clear_group_json_caches:
-        print("- Tum grup _json_cache klasorleri")
+        print("- Eski grup _json_cache klasorleri")
     if profile.get("clear_root_json_cache"):
         print("- Kok _json_cache klasoru")
     if profile.get("clear_state"):
@@ -267,12 +267,10 @@ def _ensure_output_structure(profile_key: str) -> None:
 
     for group in target_groups:
         output_group_dir(group)
-        json_cache_dir(group)
 
     if profile.get("clear_group_json_caches"):
         for group in GROUP_DIR_NAMES:
             output_group_dir(group)
-            json_cache_dir(group)
 
     if profile.get("clear_root_json_cache"):
         ROOT_JSON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -361,7 +359,7 @@ def run() -> dict:
     print(AYIRICI)
     print(f"Profil:                    {PROFILE_DEFINITIONS[profile_key].get('label', profile_key)}")
     print(f"Output temizlenen oge:     {details['outputs']}")
-    print(f"JSON cache temizligi:      {details['json_caches']}")
+    print(f"Legacy JSON cache:         {details['json_caches']}")
     print(f"Kok _json_cache:           {details['root_json_cache']}")
     print(f"state temizlenen oge:      {details['state']}")
     print(f"logs temizlenen oge:       {details['logs']}")

@@ -7,6 +7,7 @@ from typing import Any, Optional
 import requests
 
 from moduller.logger import get_logger
+from moduller.project_paths import OAUTH_DIR
 from moduller.retry_utils import retry_with_backoff
 from moduller.srt_utils import parse_srt_blocks, read_srt_file
 
@@ -23,10 +24,10 @@ YOUTUBE_ANALYTICS_API_BASE = "https://youtubeanalytics.googleapis.com/v2"
 
 def _oauth_paths() -> tuple[Path, Path]:
     client_secret = Path(
-        os.getenv("YOUTUBE_OAUTH_CLIENT_SECRET_FILE", "00_Inputs/oauth/google_client_secret.json")
+        os.getenv("YOUTUBE_OAUTH_CLIENT_SECRET_FILE", str(OAUTH_DIR / "google_client_secret.json"))
     )
     token_file = Path(
-        os.getenv("YOUTUBE_OAUTH_TOKEN_FILE", "00_Inputs/oauth/youtube_analytics_token.json")
+        os.getenv("YOUTUBE_OAUTH_TOKEN_FILE", str(OAUTH_DIR / "youtube_analytics_token.json"))
     )
     return client_secret, token_file
 

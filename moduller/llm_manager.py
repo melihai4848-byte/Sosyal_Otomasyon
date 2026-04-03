@@ -4,6 +4,7 @@ import re
 import requests
 from moduller.logger import get_logger
 from moduller.exceptions import LLMConnectionError
+from moduller.llm_role_table import load_llm_role_table_entries
 from moduller.retry_utils import retry_with_backoff
 
 # ÖNCE logger'ı tanımla
@@ -89,99 +90,28 @@ ROLE_GUIDANCE = {
     },
 }
 
-MODULE_SMART_RECOMMENDATIONS = {
-    "201": (
-        "deepseek-v3.1:671b-cloud",
-        "hybrid thinking ve dil tutarliligi, kritik packaging modulu icin dengeli kalite sunuyor",
-    ),
-    "202": (
-        "glm-5:cloud",
-        "kompleks reasoning ve soguk analiz tarafinda daha guclu bir eslesme sunuyor",
-    ),
-    "203": (
-        "kimi-k2.5:cloud",
-        "sahne hayal etme ve gorsel dusunme gerektiren B-roll promptlarinda daha dogal duruyor",
-    ),
-    "204": (
-        "kimi-k2.5:cloud",
-        "thumbnail tarafinda gorsel sezgi ve kompozisyon hissi daha iyi oturuyor",
-    ),
-    "205": (
-        "deepseek-v3.1:671b-cloud",
-        "duygu akisini soyutlayip daha dengeli muzik yonu cikarmakta daha guvenli kaliyor",
-    ),
-    "301": (
-        "deepseek-v3.1:671b-cloud",
-        "metin yapisi, fikir secimi ve polish dengesinde daha guvenli bir aday",
-    ),
-    "302": (
-        "kimi-k2.5:cloud",
-        "kisa form enerji, gorsel donusum ve hizli ideation tarafina daha iyi uyuyor",
-    ),
-    "303": (
-        "deepseek-v3.1:671b-cloud",
-        "kisa ama akisi disiplinli story planlarinda dili daha toplu tutuyor",
-    ),
-    "401": (
-        "glm-5:cloud",
-        "trend sinyallerini ayiklama ve stratejik onceliklendirme tarafinda daha uygun",
-    ),
-    "402": (
-        "glm-5:cloud",
-        "yanlis teshis riskini azaltacak reasoning agirlikli analiz profiline daha yakin",
-    ),
+ROLE_TABLE_ENTRIES = load_llm_role_table_entries()
+MODULE_MAIN_RECOMMENDATIONS = {
+    module_number: (entry.recommended_main[0], entry.recommended_main[1], entry.notes or "llm_rol_tablosu.md kaydindan yuklendi")
+    for module_number, entry in ROLE_TABLE_ENTRIES.items()
+    if entry.recommended_main
 }
-
+MODULE_SMART_RECOMMENDATIONS = {
+    module_number: (entry.recommended_smart[0], entry.recommended_smart[1], entry.notes or "llm_rol_tablosu.md kaydindan yuklendi")
+    for module_number, entry in ROLE_TABLE_ENTRIES.items()
+    if entry.recommended_smart
+}
 MODULE_LLM_SUMMARIES = {
-    "102": {
-        "title": "Gramer Duzenleyici",
-        "main": "video-ozel glossary duzeltmesini, gramer, imla ve satir temizligini yapar",
-    },
-    "201": {
-        "title": "Video Aciklama ve Baslik",
-        "smart": "description, baslik ve metadata paketini uretir",
-    },
-    "202": {
-        "title": "Video Analiz Uretici",
-        "main": "ilk analitik taslagi ve yapisal islemeyi yapar",
-        "smart": "nihai analiz, yorum ve packaging cilarini yapar",
-    },
-    "203": {
-        "title": "B-Roll Prompt Uretici",
-        "smart": "sahne bazli B-roll fikirlerini ve promptlarini uretir",
-    },
-    "204": {
-        "title": "Thumbnail Prompt Uretici",
-        "smart": "ana thumbnail konseptlerini ve gorsel promptlari uretir",
-    },
-    "205": {
-        "title": "Muzik Prompt Uretici",
-        "main": "muzik planini ve segment mantigini cikarir",
-    },
-    "301": {
-        "title": "Carousel Fikir Uretici",
-        "main": "ilk carousel aday havuzunu cikarir",
-        "smart": "en iyi adaylari secer ve final carousel paketini kurar",
-    },
-    "302": {
-        "title": "Reels Fikir Uretici",
-        "main": "ilk reel aday havuzunu cikarir",
-        "smart": "en iyi reel adaylarini secer ve final packagingi yapar",
-    },
-    "303": {
-        "title": "Story Serisi Fikir Uretici",
-        "main": "ilk story aday havuzunu cikarir",
-        "smart": "en iyi story adaylarini secer ve final story setini kurar",
-    },
-    "401": {
-        "title": "YouTube Trends Konu Fikirleri",
-        "smart": "trend sinyallerini ayiklar, konu fikirlerini skorlar ve en guclu video adaylarini cikarir",
-    },
-    "402": {
-        "title": "YouTube Analytics Analizi",
-        "main": "kanal ve video verisinden ilk teshis ve analitik yorumu cikarir",
-        "smart": "nihai kritik, aksiyon plani ve stratejik oncelikleri netlestirir",
-    },
+    module_number: {
+        key: value
+        for key, value in {
+            "title": entry.title,
+            "main": entry.main_summary,
+            "smart": entry.smart_summary,
+        }.items()
+        if value
+    }
+    for module_number, entry in ROLE_TABLE_ENTRIES.items()
 }
 
 
@@ -189,20 +119,20 @@ def print_module_llm_recommendation(module_number: str) -> None:
     recommendation = MODULE_SMART_RECOMMENDATIONS.get(str(module_number or "").strip())
     if not recommendation:
         return
-    model_name, reason = recommendation
+    provider, model_name, reason = recommendation
     print("\n" + "-" * 72)
     print(f"💡 Smart LLM Modul Onerisi | {module_number}")
-    print(f"Favori: {model_name} ({reason})")
+    print(f"Favori: {provider}:{model_name} ({reason})")
     print("-" * 72)
 
 
 def get_module_recommended_llm_config(module_number: str, role: str = "main") -> tuple[str, str]:
     role_key = _normalize_llm_role(role)
-    if role_key == "SMART":
-        recommendation = MODULE_SMART_RECOMMENDATIONS.get(str(module_number or "").strip())
-        if recommendation:
-            model_name, _reason = recommendation
-            return "OLLAMA", model_name
+    recommendation_map = MODULE_SMART_RECOMMENDATIONS if role_key == "SMART" else MODULE_MAIN_RECOMMENDATIONS
+    recommendation = recommendation_map.get(str(module_number or "").strip())
+    if recommendation:
+        provider, model_name, _reason = recommendation
+        return provider, model_name
     return get_default_llm_config(role)
 
 
@@ -1025,6 +955,52 @@ def fetch_dynamic_models(provider: str) -> list:
                 print(f"  {i}) {m_id} -> {desc}")
                 modeller.append(m_id) # Sadece ID'yi listeye ekle
         #------------------------------------#
+        
+        #-------DEEPSEEK SERVER SETTINGS-------#
+        elif provider == "DEEPSEEK":
+            api_key = os.getenv("DEEPSEEK_API_KEY")
+            if not api_key:
+                logger.error("DEEPSEEK_API_KEY bulunamadı! Çevre değişkenlerini kontrol edin.")
+                return []
+            
+            deepseek_rehber = {
+                "deepseek-reasoner": "🧠 Karmaşık mantık yürütme, derin analiz (R1)",
+                "deepseek-chat": "⚡ Hızlı, akıcı ve günlük görevler (V3)"
+            }
+            
+            try:
+                url = "https://api.deepseek.com/models"
+                headers = {"Authorization": f"Bearer {api_key}"}
+                resp_obj = requests.get(url, headers=headers, timeout=10)
+                if resp_obj.status_code != 200:
+                    raise Exception(f"HTTP Hata Kodu: {resp_obj.status_code} - Detay: {resp_obj.text}")
+                
+                resp = resp_obj.json()
+                aktif_modeller = [m["id"] for m in resp.get("data", [])]
+                final_liste = []
+                
+                print(f"\n🔥 {provider} Şampiyonlar Ligi (Önerilenler):")
+                count = 0
+                for m_id, aciklama in deepseek_rehber.items():
+                    if m_id in aktif_modeller:
+                        count += 1
+                        print(f"  [{count}] ⭐ {m_id} \n      └─> {aciklama}")
+                        final_liste.append(m_id)
+                
+                diger_modeller = [m for m in aktif_modeller if m not in final_liste]
+                if diger_modeller:
+                    print(f"\n🌐 Diğer Aktif Modeller:")
+                    for u_model in diger_modeller:
+                        count += 1
+                        print(f"  [{count}] {u_model}")
+                        final_liste.append(u_model)
+                
+                return final_liste
+                
+            except Exception as e:
+                logger.error(f"DeepSeek modelleri çekilemedi: {e}")
+                return ["deepseek-chat", "deepseek-reasoner"]
+        #------------------------------------#
 
     except Exception as e:
         logger.warning(f"Modeller otomatik olarak çekilemedi. Hata: {e}")
@@ -1072,15 +1048,16 @@ def select_llm(role: str = "main") -> tuple:
     saglayici = ""
     if baglanti_tipi == "1":
         _print_provider_guidance(role)
-        print("\n🌐 ONLINE SAĞLAYICILAR (Tamamen Ücretsiz & Stabil):")
+        print("\n🌐 ONLINE SAĞLAYICILAR:")
         print("  [1] Gemini (Google)")
         print("  [2] HuggingFace")
         print("  [3] Groq (Hız Şampiyonu)")
         print("  [4] OpenRouter (Ücretsiz Çeşitlilik)")
         print("  [5] ApiFreeLLM")
+        print("  [6] DeepSeek (Ücretli API Key)")
         
-        s_secim = input("👉 Sağlayıcı Seçiniz (1-5): ").strip()
-        saglayicilar = {"1": "GEMINI", "2": "HUGGINGFACE", "3": "GROQ", "4": "OPENROUTER", "5": "APIFREELLM"}
+        s_secim = input("👉 Sağlayıcı Seçiniz (1-6): ").strip()
+        saglayicilar = {"1": "GEMINI", "2": "HUGGINGFACE", "3": "GROQ", "4": "OPENROUTER", "5": "APIFREELLM", "6": "DEEPSEEK"}
         saglayici = saglayicilar.get(s_secim, "GEMINI")
         _print_provider_guidance(role, saglayici)
         
@@ -1158,6 +1135,10 @@ class CentralLLM:
             self.api_key = os.getenv("APIFREELLM_API_KEY")
             if not self.api_key: raise ValueError("APIFREELLM_API_KEY eksik!")
             self.base_url = _apifreellm_base_url()
+
+        elif self.provider == "DEEPSEEK":
+            self.api_key = os.getenv("DEEPSEEK_API_KEY")
+            if not self.api_key: raise ValueError("DEEPSEEK_API_KEY eksik!")
 
         elif self.provider == "HUGGINGFACE":
             self.api_key = os.getenv("HF_API_KEY")
@@ -1262,6 +1243,30 @@ class CentralLLM:
                             return value
                 raise RuntimeError(f"ApiFreeLLM beklenmeyen cevap dondurdu: {resp_json}")
 
+            elif self.provider == "DEEPSEEK":
+                headers = {
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": self.model_name,
+                    "messages": messages,
+                }
+                resp = requests.post(
+                    "https://api.deepseek.com/chat/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=effective_timeout,
+                )
+                if resp.status_code >= 400:
+                    raise _http_error_from_response("DeepSeek", resp)
+                resp_json = resp.json()
+                if "choices" in resp_json:
+                    return resp_json["choices"][0]["message"]["content"]
+                else:
+                    hata_mesaji = resp_json.get("error", resp_json)
+                    raise RuntimeError(f"DeepSeek reddetti: {hata_mesaji}")
+
             elif self.provider == "HUGGINGFACE":
                 if HF_AVAILABLE and hasattr(self, 'client') and self.client:
                     response = self.client.chat_completion(
@@ -1351,4 +1356,3 @@ class CentralLLM:
         except Exception as e:
             logger.error(f"{self.provider} istegi kalici olarak basarisiz oldu: {e}")
             raise LLMConnectionError(f"Basarisiz oldu: {e}") from e
-

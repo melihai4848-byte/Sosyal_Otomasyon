@@ -315,7 +315,10 @@ def print_group_menu(group_entries: list[tuple[str, str, str, list[ModuleEntry]]
         numara_araligi = entries[0].number if len(entries) == 1 else f"{entries[0].number}-{entries[-1].number}"
         print(f"[{option}] {group_title} ({len(entries)} modul, {numara_araligi})")
     print("")
-    print("Ipucu: Once grup sec. Bos birakirsan 1xx + 2xx + 3xx pipeline'i calisir.")
+    print("Not: Lütfen grup seçiniz.")
+    print("- Boş bırakmak: Full Otomasyon (101-304)")
+    print("- Tüm grubu çalıştırma: (Örnek: 1xx)")
+    print("- Çoklu Grup Seçimi: (Örnek: 2xx,3xx)")
     print("[0] 👋 Çıkış 👋")
     print("=" * 50)
 
@@ -375,6 +378,49 @@ def main():
                 sys.exit(0)
             continue
 
+        # xx KISAYOLU KONTROLU (Örn: 2xx veya 2xx,3xx)
+        if "xx" in secim.lower():
+            secim_parcalari = [p.strip().lower() for p in secim.split(",") if p.strip()]
+            toplanan_moduller = []
+            hatali_grup = False
+            
+            for p in secim_parcalari:
+                if p.endswith("xx"):
+                    grup_kodu = p.replace("xx", "00")
+                    if grup_kodu in grup_haritasi:
+                        toplanan_moduller.extend(grup_haritasi[grup_kodu][2])
+                    else:
+                        main_logger.warning(f"Geçersiz grup kısayolu: {p}")
+                        hatali_grup = True
+                        break
+                else:
+                    main_logger.warning(f"Çoklu seçimde sadece xx formatı kullanın (Örn: 2xx, 3xx). Hatalı: {p}")
+                    hatali_grup = True
+                    break
+                    
+            if hatali_grup:
+                continue
+                
+            if toplanan_moduller:
+                pipeline_modulleri = [e.number for e in toplanan_moduller if e.pipeline_enabled and e.group in {"subtitle", "youtube", "instagram", "research"}]
+                diger_moduller = [e for e in toplanan_moduller if not (e.pipeline_enabled and e.group in {"subtitle", "youtube", "instagram", "research"})]
+                
+                if diger_moduller:
+                    _run_entries(diger_moduller)
+                    
+                if pipeline_modulleri:
+                    run_module(
+                        "moduller.full_automation",
+                        "",
+                        "run",
+                        preselected_selection=",".join(pipeline_modulleri),
+                    )
+                
+                if not prompt_continue_or_exit():
+                    main_logger.info("Sistem kapatılıyor. İyi çalışmalar!")
+                    sys.exit(0)
+            continue
+
         grup_bilgisi = grup_haritasi.get(secim)
         if grup_bilgisi is None:
             main_logger.warning("Gecersiz secim! Lutfen once gecerli bir grup numarasi girin.")
@@ -414,7 +460,7 @@ def should_switch_to_cli_mode(argv: list[str]) -> bool:
 if __name__ == "__main__":
     try:
         if should_switch_to_cli_mode(sys.argv[1:]):
-            main_cli = getattr(_load_runtime_module("moduller.502_youtube_draft_upload_engine"), "main_cli")
+            main_cli = getattr(_load_runtime_module("moduller.youtube_draft_uploader"), "main_cli")
             sys.exit(main_cli(sys.argv[1:]))
         main()
     except KeyboardInterrupt:

@@ -8,6 +8,7 @@ from typing import Any
 
 from moduller.hardware_profiles import DetectedHardware, detect_hardware
 from moduller.logger import get_logger
+from moduller.project_paths import MODELS_DIR
 
 logger = get_logger("YZ_Transkript")
 
@@ -450,7 +451,7 @@ class OnnxQnnWhisperBackend(BaseWhisperBackend):
                 target_root = Path(__file__).resolve().parent.parent / target_root
         else:
             safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", model_id).strip("_") or "whisper_onnx"
-            target_root = Path(__file__).resolve().parent.parent / "00_Inputs" / "models" / safe_name
+            target_root = MODELS_DIR / safe_name
 
         target_root.mkdir(parents=True, exist_ok=True)
         try:

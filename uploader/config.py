@@ -7,6 +7,15 @@ import os
 from pathlib import Path
 from typing import Any
 
+from moduller.project_paths import (
+    OAUTH_DIR,
+    UPLOADER_FAILED_ROOT,
+    UPLOADER_INPUT_ROOT,
+    UPLOADER_LOCK_DIR,
+    UPLOADER_LOG_FILE,
+    UPLOADER_STATE_FILE,
+    UPLOADER_SUCCESS_ROOT,
+)
 from uploader.constants import CONFIG_DIR, DEFAULT_CONFIG_FILENAME, ROOT_DIR
 from uploader.errors import ConfigError
 from uploader.models import OAuthSettings, RetrySettings, UploadDefaults, UploaderConfig, WatchSettings
@@ -19,20 +28,20 @@ except ImportError:  # pragma: no cover
 
 
 DEFAULT_CONFIG: dict[str, Any] = {
-    "input_root": "input/youtube_uploads",
-    "success_root": "success/youtube_uploaded",
-    "failed_root": "failed/youtube_failed",
-    "state_file": "state/youtube_upload_state.json",
-    "lock_dir": "state/youtube_locks",
-    "log_file": "logs/youtube_draft_uploader.log",
+    "input_root": str(UPLOADER_INPUT_ROOT.relative_to(ROOT_DIR)),
+    "success_root": str(UPLOADER_SUCCESS_ROOT.relative_to(ROOT_DIR)),
+    "failed_root": str(UPLOADER_FAILED_ROOT.relative_to(ROOT_DIR)),
+    "state_file": str(UPLOADER_STATE_FILE.relative_to(ROOT_DIR)),
+    "lock_dir": str(UPLOADER_LOCK_DIR.relative_to(ROOT_DIR)),
+    "log_file": str(UPLOADER_LOG_FILE.relative_to(ROOT_DIR)),
     "preferred_metadata_language": "Türkçe",
     "allow_scheduled_publish": False,
     "move_successful_folders": True,
     "move_failed_folders": True,
     "open_browser_for_oauth": True,
     "oauth": {
-        "client_secret_file": "00_Inputs/oauth/google_client_secret.json",
-        "token_file": "00_Inputs/oauth/youtube_draft_upload_token.json",
+        "client_secret_file": str((OAUTH_DIR / "google_client_secret.json").relative_to(ROOT_DIR)),
+        "token_file": str((OAUTH_DIR / "youtube_draft_upload_token.json").relative_to(ROOT_DIR)),
     },
     "watch": {
         "poll_interval_seconds": 30,
@@ -126,7 +135,6 @@ def _apply_env_overrides(raw: dict[str, Any]) -> dict[str, Any]:
 def load_uploader_config(config_path: str | None = None) -> UploaderConfig:
     """Load config from defaults, optional JSON file, and environment variables."""
     load_dotenv(ROOT_DIR / ".env")
-    load_dotenv(ROOT_DIR / "moduller" / ".env")
 
     raw = _deep_merge({}, DEFAULT_CONFIG)
     candidate = Path(config_path).resolve() if config_path else (CONFIG_DIR / DEFAULT_CONFIG_FILENAME)

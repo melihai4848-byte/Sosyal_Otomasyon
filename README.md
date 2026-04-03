@@ -1,57 +1,54 @@
-<<<<<<< HEAD
-# YouTube Otomasyon v2
+# Sosyal Medya Otomasyon
 
 Uzun videolardan altyazi, YouTube metadata, analiz raporlari ve Instagram icerikleri ureten moduler bir sosyal medya otomasyon sistemi.
 
-Sistem terminal tabanlidir ve ana menu uzerinden tekil modul, grup bazli calisma veya coklu secim pipeline'i ile kullanilir.
+Sistem terminal tabanlidir. Ana menu uzerinden:
+- tek modul
+- ayni gruptan coklu modul
+- grup bazli toplu calisma
+- full automation
+
+senaryolari ile kullanilir.
 
 ## Neler Yapar
 
 - Videodan veya sesten Turkce altyazi uretir
-- Altyaziyi duzeltir ve EN/DE ceviri cikarir
-- YouTube icin title, description, chapter, hashtag ve metadata uretir
-- Video analizi, trim, hook, B-roll ve thumbnail promptlari cikarir
-- Instagram icin carousel, reels, story ve paylasim plani uretir
-- Trend/topic research ve analytics analizi yapar
-- YouTube draft upload, B-roll download, Premiere XML gibi araclar sunar
+- Gramer duzeltmesi yapar ve EN/DE ceviri cikarir
+- YouTube icin description, title, chapter, hashtag ve metadata paketi uretir
+- Video analizi, hook, trim, B-roll ve thumbnail promptlari cikarir
+- Instagram icin carousel, reels, story ve haftalik paylasim plani uretir
+- Trend/topic research ve YouTube analytics analizi yapar
+- YouTube draft upload, otomatik B-roll indirme, Premiere XML ve reels render araclari sunar
 
-## Grup Yapisi
+## Moduller
 
-- `100` Altyazi grubu: `101-103`
-- `200` YouTube grubu: `201-205`
-- `300` Instagram grubu: `301-304`
-- `400` Arastirma grubu: `401-402`
-- `500` Araclar grubu: `501-505`
+### 100 Altyazi Grubu
 
-## Ana Moduller
+- `101` Altyazi Olusturucu (TR)
+- `102` Gramer Duzenleyici (TR)
+- `103` Altyazi Cevirmeni (EN-DE)
 
-### 1xx Altyazi
+### 200 YouTube Grubu
 
-- `101` Altyazi Olusturucu
-- `102` Gramer Duzenleyici
-- `103` Altyazi Cevirmeni
+- `201` Video Aciklamasi (Description) Olusturucu (TR-EN-DE)
+- `202` Video Elestirmeni
+- `203` B-Roll Prompt Uretici (16:9 Yatay)
+- `204` Thumbnail Prompt Uretici (16:9 Yatay)
+- `205` Muzik Prompt Olusturucu
 
-### 2xx YouTube
-
-- `201` YouTube Metadata Olusturucu
-- `202` Video Analiz Uretici
-- `203` B-Roll Prompt Uretici
-- `204` Thumbnail Prompt Uretici
-- `205` Muzik Prompt Uretici
-
-### 3xx Instagram
+### 300 Instagram Grubu
 
 - `301` Carousel Fikir Uretici
 - `302` Reels Fikir Uretici
 - `303` Story Serisi Fikir Uretici
 - `304` Etkilesim Planlayici
 
-### 4xx Arastirma
+### 400 Arastirma Grubu
 
 - `401` YouTube Trends Konu Fikirleri
 - `402` YouTube Analytics Analizi
 
-### 5xx Araclar
+### 500 Araclar Grubu
 
 - `501` Reels Olusturucu
 - `502` YouTube Draft Upload Engine
@@ -60,6 +57,8 @@ Sistem terminal tabanlidir ve ana menu uzerinden tekil modul, grup bazli calisma
 - `505` Cikti Temizleyici
 
 ## Pipeline Sirasi
+
+Ana pipeline `101-304` araligindaki moduller icin gecerlidir:
 
 1. `101` subtitle
 2. `102` grammar
@@ -74,34 +73,36 @@ Sistem terminal tabanlidir ve ana menu uzerinden tekil modul, grup bazli calisma
 11. `303` story
 12. `304` ig_metadata
 
-Not:
-- Arastirma ve tools grubu bu ana pipeline'a dahil degildir.
-- Bos secimle ana menuden calistirildiginda `1xx + 2xx + 3xx` pipeline'i birlikte calisir.
+Notlar:
+- `400` ve `500` gruplari bu ana pipeline’in disindadir.
+- Ana menude grup secimini bos birakirsan full automation calisir.
+- Coklu secimde bagimliliklar otomatik eklenir.
+- Checkpoint bulunsa bile secilen moduller yeniden calistirilir; otomatik atlama yoktur.
 
-## LLM Mimarisi
+## LLM Yapisi
 
 Sistem iki temel rol kullanir:
 
 - `Main LLM`: daha duzenli, structured ve kuralli isler
-- `Smart LLM`: packaging, secim, yorumlama ve yaratici uretim
+- `Smart LLM`: yorumlama, secim, packaging ve yaratici uretim
 
-Bazi moduller tek model kullanir, bazilari hibrittir:
+Modul bazli rol ve onerilen model tablosu kok dizindeki [llm_rol_tablosu.md](c:\Users\melih\Desktop\Sosyal_Medya_Otomasyon\llm_rol_tablosu.md) dosyasindan okunur.
 
-- Sadece `Main`: `102`, `205`
-- Sadece `Smart`: `201`, `203`, `204`
-- Hibrit `Main + Smart`: `202`, `301`, `302`, `303`
+Bu dosyada:
+- bir modulin `main_enabled` ve `smart_enabled` durumunu
+- `recommended_main`
+- `recommended_smart`
+- rol aciklamalarini
 
-Full automation seciminde sistem LLM'leri otomatik atar ve kullaniciya tekrar sormaz.
+duzenleyebilirsin. Degisiklikler uygulama yeniden baslatildiginda devreye girer.
 
 ## Kurulum
 
 ### 1. Python
 
-Python `3.11+` tavsiye edilir.
+Python `3.10+` gerekir. `3.11+` tavsiye edilir.
 
 ### 2. Bagimliliklar
-
-Repo kok dizininde:
 
 ```bash
 pip install -r requirements.txt
@@ -109,30 +110,43 @@ pip install -r requirements.txt
 
 ### 3. Sistem Bilesenleri
 
-Pip disinda su araclar da gerekir:
+Pip disinda su araclar gerekir:
 
 - `FFmpeg`
 - `ffprobe`
-- lokal model kullanilacaksa `Ollama`
+- lokal model kullanacaksan `Ollama`
 
 ### 4. Ortam Degiskenleri
 
-Ana ayarlar `moduller/.env` icinden okunur.
+Ana ortam dosyasi proje kokundeki [.env](c:\Users\melih\Desktop\Sosyal_Medya_Otomasyon\.env) dosyasidir.
 
-Ihtiyaca gore su anahtarlar kullanilir:
+Sik kullanilan anahtarlar:
 
 - `OLLAMA_LOCAL_SERVER`
 - `GEMINI_API_KEY`
 - `GROQ_API_KEY`
 - `OPENROUTER_API_KEY`
-- `HF_API_KEY`
+- `APIFREELLM_API_KEY`
+- `DEEPSEEK_API_KEY`
 - `TRANSLATEGEMMA_MODEL_NAME`
+- `DEFAULT_MAIN_LLM_PROVIDER`
+- `DEFAULT_MAIN_LLM_MODEL`
+- `DEFAULT_SMART_LLM_PROVIDER`
+- `DEFAULT_SMART_LLM_MODEL`
+
+Ek olarak ihtiyaca gore:
 - YouTube OAuth / Analytics anahtarlari
-- stok medya provider anahtarlari:
-  - `PEXELS_API_KEY`
-  - `PIXABAY_API_KEY`
-  - `FREEPIK_API_KEY`
-  - `COVERR_API_KEY`
+- stok medya provider anahtarlari
+
+### 5. Launcher
+
+Proje kokundeki launcher:
+
+- [run_automation.py](c:\Users\melih\Desktop\Sosyal_Medya_Otomasyon\run_automation.py)
+- [run_automation.bat](c:\Users\melih\Desktop\Sosyal_Medya_Otomasyon\run_automation.bat)
+- [run_automation.ps1](c:\Users\melih\Desktop\Sosyal_Medya_Otomasyon\run_automation.ps1)
+
+`.venv` yoksa olusturur, gereksinimleri kontrol eder ve uygulamayi baslatir.
 
 ## Calistirma
 
@@ -142,88 +156,78 @@ Ana menuyu acmak icin:
 python main.py
 ```
 
-Terminalde:
+veya launcher ile:
 
-- once grup secilir
-- sonra tekli, coklu veya tum grup calistirilabilir
-- bos secim ana pipeline'i calistirir
+```bash
+python run_automation.py
+```
+
+Ana menu davranisi:
+- bos secim: full automation
+- `1xx`, `2xx`, `3xx`, `4xx`, `5xx`: ilgili grup
+- `2xx,3xx`: coklu grup secimi
+- grup icinde tek numara: tek modul
+- grup icinde `201,202,203`: ayni gruptan coklu modul
 
 ## Klasor Yapisi
 
-- `00_Inputs/`: kaynak video, ses ve manuel girdiler
-- `00_Outputs/`: tum uretilen ciktilar
-- `moduller/`: ana otomasyon modulleri
+- `workspace/00_Inputs/`: kaynak video, ses, oauth ve manuel girdiler
+- `workspace/00_Outputs/`: tum uretilen ciktilar
+- `moduller/`: ana otomasyon modulleri ve ortak yardimci kodlar
 - `topic_selection_engine/`: trend/topic research engine
 - `uploader/`: YouTube draft upload altyapisi
-- `logs/`: log dosyalari
+- `config/`: ornek config dosyalari
+- `workspace/logs/`: log dosyalari
+- `workspace/state/`: ortak runtime state dosyalari
+- `workspace/uploader/`: uploader input/success/failed akis klasorleri
 
-## Onemli Cikti Klasorleri
+## Cikti Yapisi
 
-### YouTube
+Ana group output klasorleri:
 
-- `00_Outputs/200_YouTube/YT-Metadata_TR.txt`
-- `00_Outputs/200_YouTube/YT-Metadata_EN.txt`
-- `00_Outputs/200_YouTube/YT-Metadata_DE.txt`
-- `00_Outputs/200_YouTube/YT-Video_Analysis_TR.txt`
-- `00_Outputs/200_YouTube/YT-Editing_Anaylsis_TR.txt`
-- `00_Outputs/200_YouTube/YT-B-Roll_Prompts.txt`
-- `00_Outputs/200_YouTube/YT-Thumbnail_Prompts.txt`
-- `00_Outputs/200_YouTube/YT-Background_Music_Prompts.txt`
+- `workspace/00_Outputs/100_Altyazı`
+- `workspace/00_Outputs/200_YouTube`
+- `workspace/00_Outputs/300_Instagram`
+- `workspace/00_Outputs/400_Arastirma_Sonuclari`
+- `workspace/00_Outputs/500_Araclar_Sonuclari`
+- `workspace/00_Outputs/_json_cache`
 
-### Instagram
+Ornek metin ciktilari:
 
-- `00_Outputs/300_Instagram/301_IG-Carousel_Fikirleri/*.txt`
-- `00_Outputs/300_Instagram/302_IG-Reels_Fikirleri/*.txt`
-- `00_Outputs/300_Instagram/303_IG-Story_Fikirleri/*.txt`
-- `00_Outputs/300_Instagram/IG-Paylasim_Takvimi.txt`
+- `workspace/00_Outputs/200_YouTube/01_Metadata/YT-Metadata_TR.txt`
+- `workspace/00_Outputs/200_YouTube/01_Metadata/YT-Metadata_EN.txt`
+- `workspace/00_Outputs/200_YouTube/01_Metadata/YT-Metadata_DE.txt`
+- `workspace/00_Outputs/200_YouTube/05_Analysis/YT-Video_Analysis_TR.txt`
+- `workspace/00_Outputs/200_YouTube/05_Analysis/YT-Editing_Anaylsis_TR.txt`
+- `workspace/00_Outputs/200_YouTube/03_B-Rolls/YT-B-Roll_Prompts.txt`
+- `workspace/00_Outputs/200_YouTube/02_Thumbnails/YT-Thumbnail_Prompts.txt`
+- `workspace/00_Outputs/200_YouTube/04_Musics/YT-Background_Music_Prompts.txt`
+- `workspace/00_Outputs/300_Instagram/IG-Carousel_Fikirleri.txt`
+- `workspace/00_Outputs/300_Instagram/IG-Reels_Fikirleri.txt`
+- `workspace/00_Outputs/300_Instagram/IG-Story_Fikirleri.txt`
+- `workspace/00_Outputs/300_Instagram/IG-Paylasim_Takvimi.txt`
+- `workspace/00_Outputs/400_Arastirma_Sonuclari/Youtube_Trends-Konu_Fikirleri.txt`
+- `workspace/00_Outputs/500_Araclar_Sonuclari/Reel_Shorts_Olusturucu_Raporu.txt`
 
-### Research
+## Ozel Notlar
 
-- `00_Outputs/400_Arastirma_Sonuclari/`
-
-### Cache
-
-Cogu modul ayrica JSON cache cikarir:
-
-- `00_Outputs/**/_json_cache/`
-
-## Coklu Secim ve Full Automation
-
-### Coklu Secim
-
-Ayni grup icinde birden fazla modul secildiginde:
-
-- bagimliliklar otomatik eklenir
-- gerekiyorsa ortak pipeline akisi kullanilir
-- LLM gereken adimlar icin onerilen profil ekrani gosterilir
-
-### Full Automation
-
-Ana menude bos secim yapildiginda:
-
-- `1xx + 2xx + 3xx` pipeline'i birlikte calisir
-- LLM secimi sorulmaz
-- modullere gore otomatik model profili atanir
-
-## Notlar
-
-- Ollama HTTP uzerinden kullanilir; ayrica `ollama` Python paketi gerekmez.
-- Bazi moduller uzun ve structured JSON cevaplar urettigi icin debug dosyalari yazabilir.
-- `505` Cikti Temizleyici klasor yapisini korur, sadece icerikleri temizler.
-- `502` uploader publish yapmaz; video draft/private olarak guncellenir.
+- `101` ve `501` LLM’den cok `Whisper` ve `ffmpeg` agirlikli calisir.
+- `103` ve metadata ceviri asamasinda `Main/Smart` disinda ayri translation modeli kullanilabilir.
+- `201` modulunde Turkce ana metadata uretimi Smart LLM ile yapilir; EN/DE ceviri ayri ceviri modeliyle ilerleyebilir.
+- `401` ve `402` research grubundadir; ana pipeline’in zorunlu parcasi degildir.
+- `505` klasor yapisini koruyup ciktilari temizlemek icin kullanilir.
 
 ## Hizli Baslangic
 
-1. `pip install -r requirements.txt`
-2. `moduller/.env` ayarlarini doldur
+1. `.env` dosyasini kok dizinde doldur
+2. `pip install -r requirements.txt`
 3. `python main.py`
 4. Once `100` grubundan altyazi akisini dene
 5. Sonra `200` ve `300` gruplarina gec
+6. Rol/model ayari gerekiyorsa `llm_rol_tablosu.md` dosyasini duzenle
 
-## Lisans / Ic Not
+## Guvenlik
 
-Bu repo proje ici kullanim mantigiyla yapilandirilmistir. Ortam degiskenleri, OAuth dosyalari ve API anahtarlari repoya eklenmemelidir.
-=======
-# youtube-automation
-AI-powered social media automation pipeline for long-form video production. It generates Turkish subtitles, grammar fixes, multilingual translations, video analysis, trim suggestions, thumbnails, B-roll ideas, metadata, carousel/reels/story concepts, and music prompts through a modular, end-to-end workflow.
->>>>>>> origin/main
+- `.env`, OAuth dosyalari ve API anahtarlari repoya eklenmemelidir.
+- `workspace/00_Inputs/oauth/` altindaki kimlik dosyalari yerel kalmalidir.
+- Runtime ciktilari ve loglar repoya commitlenmemelidir.

@@ -54,6 +54,8 @@ KRITIK KURALLAR:
 - Timestamp alanlarinda yalnizca transcriptte bulunan zaman araliklarini kullan.
 - Gercekten kesmeye degecek bolumleri sec; rastgele trim onerme.
 - En az 3 trim hedefi ve en az 5 aksiyon maddesi uret.
+- Cok Kritik: Eger transcript bir Vlog'a (seyahat, eglence vs.) aitse, İLK 30 SANİYEDE bulunan birbiriyle baglantisiz, kopuk veya hizli gecisli diyaloglari SAKIN kesilecek (TRIM) hedefi olarak gösterme! Bu kisimlar videonun "Fast Teaser (Hizli Kanca)" montajidir ve kalmalari gerekir.
+- Cok Kritik: Seyahat/Vlog videolarindaki altyazisiz 2-5 saniyelik bosluklari B-Roll olarak kabul et, "gereksiz sessizlik" diye kesit onerme.
 
 JSON SEMASI:
 {{

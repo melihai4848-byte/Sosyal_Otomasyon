@@ -37,16 +37,22 @@ _PIPELINE_EVENT_HOOK = None
 FULL_AUTOMATION_MAIN_LLM = ("OLLAMA", "qwen3:14b")
 FULL_AUTOMATION_TRANSLATION_MODEL = os.getenv("TRANSLATEGEMMA_MODEL_NAME", "translategemma:12b-it-q4_K_M").strip()
 FULL_AUTOMATION_TRIM_LLM = ("OLLAMA", "kimi-k2.5:cloud")
-FULL_AUTOMATION_STEP_LLM_MODELS = {
-    "description": ("201", "deepseek-v3.1:671b-cloud"),
-    "critic": ("202", "glm-5:cloud"),
-    "broll": ("203", "kimi-k2.5:cloud"),
-    "thumbnail_main": ("204", "kimi-k2.5:cloud"),
-    "music": ("205", "deepseek-v3.1:671b-cloud"),
-    "carousel": ("301", "deepseek-v3.1:671b-cloud"),
-    "reels": ("302", "kimi-k2.5:cloud"),
-    "story": ("303", "deepseek-v3.1:671b-cloud"),
-}
+
+
+def _build_full_automation_step_llm_models() -> dict[str, tuple[str, str, str]]:
+    return {
+        "description": ("201", *get_module_recommended_llm_config("201", "smart")),
+        "critic": ("202", *get_module_recommended_llm_config("202", "smart")),
+        "broll": ("203", *get_module_recommended_llm_config("203", "smart")),
+        "thumbnail_main": ("204", *get_module_recommended_llm_config("204", "smart")),
+        "music": ("205", *get_module_recommended_llm_config("205", "main")),
+        "carousel": ("301", *get_module_recommended_llm_config("301", "smart")),
+        "reels": ("302", *get_module_recommended_llm_config("302", "smart")),
+        "story": ("303", *get_module_recommended_llm_config("303", "smart")),
+    }
+
+
+FULL_AUTOMATION_STEP_LLM_MODELS = _build_full_automation_step_llm_models()
 FULL_AUTOMATION_HYBRID_STEP_KEYS = {"critic", "carousel", "reels", "story"}
 
 
@@ -78,13 +84,17 @@ MAIN_LLM_STEPS = {entry.key for entry in get_pipeline_modules() if entry.require
 SMART_LLM_STEPS = {entry.key for entry in get_pipeline_modules() if entry.requires_smart_llm}
 
 
-def _prompt_selected_steps_recommended_profile(selected_steps: Optional[set[str]]) -> bool:
+def _prompt_selected_steps_recommended_profile(
+    selected_steps: Optional[set[str]],
+    summary_steps: Optional[set[str]] = None,
+) -> bool:
     if not selected_steps:
         return False
 
+    display_steps = summary_steps if summary_steps is not None else selected_steps
     llm_relevant_steps = [
-        key for key in _ordered_steps(selected_steps)
-        if key in PIPELINE_STEP_BY_KEY and (key in MAIN_LLM_STEPS or key in SMART_LLM_STEPS)
+        key for key in _ordered_steps(display_steps)
+        if key in PIPELINE_STEP_BY_KEY
     ]
     if not llm_relevant_steps:
         return False
@@ -97,12 +107,14 @@ def _prompt_selected_steps_recommended_profile(selected_steps: Optional[set[str]
         roles = []
         if entry.requires_main_llm:
             _provider, model_name = get_module_recommended_llm_config(entry.number, "main")
-            roles.append(f"main={model_name}")
+            roles.append(f"main={_provider}:{model_name}")
         if entry.requires_smart_llm:
             _provider, model_name = get_module_recommended_llm_config(entry.number, "smart")
-            roles.append(f"smart={model_name}")
+            roles.append(f"smart={_provider}:{model_name}")
         if roles:
             lines.append(f"{entry.number}: {entry.title} -> " + " | ".join(roles))
+        else:
+            lines.append(f"{entry.number}: {entry.title} -> LLM gerekmez")
 
     _print_terminal_block("COKLU SECIM LLM OZETI", "🤖", "\n".join(lines))
     print("[1] Onerilen profili kullan")
@@ -424,7 +436,7 @@ def _select_video():
     media_patterns = ("*.mp4", "*.mp3", "*.wav", "*.mov", "*.mkv", "*.m4v")
     video_files = [path for pattern in media_patterns for path in INPUTS_DIR.glob(pattern)]
     if not video_files:
-        logger.error("❌ 00_Inputs klasorunde video/ses bulunamadi!")
+        logger.error("❌ workspace/00_Inputs klasorunde video/ses bulunamadi!")
         return None
     print("\n📂 Lutfen islenecek medya dosyasini secin:")
     for idx, video in enumerate(video_files, start=1):
@@ -513,7 +525,7 @@ def _clear_outputs_for_full_pipeline() -> None:
 
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-    logger.info(f"Tum pipeline secildigi icin 00_Outputs klasoru sifirlandi. Silinen oge sayisi: {silinen_oge_sayisi}")
+    logger.info(f"Tum pipeline secildigi icin workspace/00_Outputs klasoru sifirlandi. Silinen oge sayisi: {silinen_oge_sayisi}")
 
 
 def _validate_pipeline_dag() -> None:
@@ -618,7 +630,10 @@ def _get_pipeline_selection(preselected_selection: Optional[str] = None) -> tupl
         return selected, []
 
 
-def _setup_selected_llms(selected_steps: Optional[set]) -> tuple[Optional[CentralLLM], Optional[CentralLLM], dict[str, CentralLLM]]:
+def _setup_selected_llms(
+    selected_steps: Optional[set],
+    summary_steps: Optional[set] = None,
+) -> tuple[Optional[CentralLLM], Optional[CentralLLM], dict[str, CentralLLM]]:
     cache: dict[tuple[str, str], CentralLLM] = {}
 
     def get_llm(provider: str, model_name: str) -> CentralLLM:
@@ -633,7 +648,7 @@ def _setup_selected_llms(selected_steps: Optional[set]) -> tuple[Optional[Centra
     llm_cila = None
     step_llm_overrides: dict[str, CentralLLM] = {}
 
-    if selected_steps is not None and _prompt_selected_steps_recommended_profile(selected_steps):
+    if (need_main or need_smart) and selected_steps is not None and _prompt_selected_steps_recommended_profile(selected_steps, summary_steps):
         if need_main:
             llm_ana = get_llm(*get_default_llm_config("main"))
         if need_smart:
@@ -645,11 +660,22 @@ def _setup_selected_llms(selected_steps: Optional[set]) -> tuple[Optional[Centra
             summary_lines.append(f"Main varsayilani: {llm_ana.model_name}")
         if llm_cila:
             summary_lines.append(f"Smart varsayilani: {llm_cila.model_name}")
-        for step_key in _ordered_steps(set(step_llm_overrides)):
+        display_steps = summary_steps if summary_steps is not None else selected_steps
+        for step_key in _ordered_steps(display_steps or set()):
             entry = MODULE_BY_KEY.get(step_key)
             if not entry:
                 continue
-            summary_lines.append(f"{entry.number}: smart={step_llm_overrides[step_key].model_name}")
+            roles = []
+            if entry.requires_main_llm and llm_ana:
+                roles.append(f"main={llm_ana.model_name}")
+            if entry.requires_smart_llm:
+                active_smart_llm = step_llm_overrides.get(step_key) or llm_cila
+                if active_smart_llm:
+                    roles.append(f"smart={active_smart_llm.model_name}")
+            if roles:
+                summary_lines.append(f"{entry.number}: " + " | ".join(roles))
+            else:
+                summary_lines.append(f"{entry.number}: LLM gerekmez")
         if summary_lines:
             _print_terminal_block("SECILEN OTO PROFIL HAZIR", "✅", "\n".join(summary_lines))
         return llm_ana, llm_cila, step_llm_overrides
@@ -680,10 +706,10 @@ def _setup_full_pipeline_llms(selected_steps: Optional[set]) -> tuple[Optional[C
     llm_cila = get_llm("OLLAMA", "deepseek-v3.1:671b-cloud")
     step_llm_overrides: dict[str, CentralLLM] = {}
 
-    for step_key, (_module_number, model_name) in FULL_AUTOMATION_STEP_LLM_MODELS.items():
+    for step_key, (_module_number, _provider, model_name) in FULL_AUTOMATION_STEP_LLM_MODELS.items():
         if selected_steps is not None and step_key not in selected_steps:
             continue
-        step_llm_overrides[step_key] = get_llm("OLLAMA", model_name)
+        step_llm_overrides[step_key] = get_llm(_provider, model_name)
     if selected_steps is None or "critic" in selected_steps:
         step_llm_overrides["critic_trim"] = get_llm(*FULL_AUTOMATION_TRIM_LLM)
 
@@ -695,15 +721,24 @@ def _setup_full_pipeline_llms(selected_steps: Optional[set]) -> tuple[Optional[C
         f"202 trim raporu: {FULL_AUTOMATION_TRIM_LLM[1]}",
         f"Main LLM varsayilani: {FULL_AUTOMATION_MAIN_LLM[1]}",
     ]
-    for step_key, (module_number, model_name) in FULL_AUTOMATION_STEP_LLM_MODELS.items():
+    for step_key, (module_number, _provider, model_name) in FULL_AUTOMATION_STEP_LLM_MODELS.items():
         if selected_steps is not None and step_key not in selected_steps:
             continue
-        if step_key in FULL_AUTOMATION_HYBRID_STEP_KEYS:
-            summary_lines.append(
-                f"{module_number}: main={FULL_AUTOMATION_MAIN_LLM[1]} | smart={model_name}"
-            )
+        entry = MODULE_BY_KEY.get(step_key)
+        if not entry:
+            continue
+        roles = []
+        if entry.requires_main_llm:
+            if entry.requires_smart_llm:
+                roles.append(f"main={FULL_AUTOMATION_MAIN_LLM[0]}:{FULL_AUTOMATION_MAIN_LLM[1]}")
+            else:
+                roles.append(f"main={_provider}:{model_name}")
+        if entry.requires_smart_llm:
+            roles.append(f"smart={_provider}:{model_name}")
+        if roles:
+            summary_lines.append(f"{module_number}: " + " | ".join(roles))
         else:
-            summary_lines.append(f"{module_number}: {model_name}")
+            summary_lines.append(f"{module_number}: LLM gerekmez")
 
     _print_terminal_block("FULL OTOMASYON OTOMATIK LLM PROFILI", "🤖", "\n".join(summary_lines))
     return llm_ana, llm_cila, step_llm_overrides
@@ -885,22 +920,22 @@ def run_selected_automation(
     step_delay_seconds: int = 5,
     step_llm_overrides: Optional[dict[str, CentralLLM]] = None,
 ) -> dict:
-    mod_altyazi = _load_runtime_module("moduller.101_altyazi_olusturucu")
-    mod_gramer = _load_runtime_module("moduller.102_gramer_duzenleyici")
-    mod_ceviri = _load_runtime_module("moduller.103_altyazi_cevirmeni")
-    mod_broll = _load_runtime_module("moduller.203_broll_onerici")
-    mod_carousel = _load_runtime_module("moduller.301_carousel_olusturucu")
+    mod_altyazi = _load_runtime_module("moduller.subtitle_generator")
+    mod_gramer = _load_runtime_module("moduller.subtitle_grammar_editor")
+    mod_ceviri = _load_runtime_module("moduller.subtitle_translator")
+    mod_broll = _load_runtime_module("moduller.broll_prompt_generator")
+    mod_carousel = _load_runtime_module("moduller.instagram_carousel_generator")
     import moduller.hook_rewriter
-    mod_ig_metadata = _load_runtime_module("moduller.304_ig_metadata_olusturucu")
+    mod_ig_metadata = _load_runtime_module("moduller.instagram_engagement_planner")
     import moduller.metadata_olusturucu
-    mod_muzik = _load_runtime_module("moduller.205_muzik_prompt_olusturucu")
-    mod_reel = _load_runtime_module("moduller.302_reel_olusturucu")
-    mod_story = _load_runtime_module("moduller.303_story_planlayici")
-    mod_thumbnail = _load_runtime_module("moduller.204_thumbnail_uretici")
+    mod_muzik = _load_runtime_module("moduller.music_prompt_generator")
+    mod_reel = _load_runtime_module("moduller.instagram_reels_generator")
+    mod_story = _load_runtime_module("moduller.instagram_story_generator")
+    mod_thumbnail = _load_runtime_module("moduller.thumbnail_prompt_generator")
     import moduller.trim_suggester
-    mod_video_analiz = _load_runtime_module("moduller.202_video_analiz_ureticisi")
-    mod_youtube_metadata = _load_runtime_module("moduller.201_youtube_metadata_olusturucu")
-    mod_video_critic = _load_runtime_module("moduller.202_video_critic")
+    mod_video_analiz = _load_runtime_module("moduller.video_analysis_generator")
+    mod_youtube_metadata = _load_runtime_module("moduller.youtube_description_generator")
+    mod_video_critic = _load_runtime_module("moduller.video_critic")
 
     _ = burn_reel_subtitles
     requested_steps = requested_steps or set(selected_steps)
@@ -1433,7 +1468,7 @@ def run(preselected_selection: Optional[str] = None):
         return
 
     if full_pipeline_requested:
-        _print_terminal_block("OUTPUT TEMIZLIGI", "🧹", "Tum moduller calisacagi icin 00_Outputs altindaki grup klasorleri tamamen sifirlanacak. Sadece 00_Inputs altindaki kaynak video korunur.")
+        _print_terminal_block("OUTPUT TEMIZLIGI", "🧹", "Tum moduller calisacagi icin workspace/00_Outputs altindaki grup klasorleri tamamen sifirlanacak. Sadece workspace/00_Inputs altindaki kaynak video korunur.")
         _clear_outputs_for_full_pipeline()
 
     secilen_video = _resolve_primary_input(requested_steps, planned_steps)
@@ -1445,11 +1480,24 @@ def run(preselected_selection: Optional[str] = None):
     resume_steps = set()
     previous_steps = {}
     if checkpoint and checkpoint.get("run_state") in resumable_states:
-        checkpoint_completed = set(checkpoint.get("completed_steps", []))
-        resume_steps = checkpoint_completed & planned_steps
-        previous_steps = checkpoint.get("steps", {}) if resume_steps else {}
-        if resume_steps:
-            logger.info("Checkpoint bulundu. Tamamlanan adimlar tekrar calistirilmadan devam edilecek: " + ", ".join(_ordered_steps(resume_steps)))
+        checkpoint_completed = set(checkpoint.get("completed_steps", [])) & planned_steps
+        if checkpoint_completed:
+            logger.info(
+                "Checkpoint bulundu ancak secilen moduller atlanmayacak; yeniden calistirilacak: "
+                + ", ".join(_ordered_steps(checkpoint_completed))
+            )
+            detay_satirlari = []
+            for step_key in _ordered_steps(checkpoint_completed):
+                entry = MODULE_BY_KEY.get(step_key)
+                if entry:
+                    detay_satirlari.append(f"{entry.number}: {entry.title}")
+            if detay_satirlari:
+                _print_terminal_block(
+                    "CHECKPOINT BULUNDU",
+                    "♻️",
+                    "Asagidaki adimlar daha once tamamlanmis olsa da bu calistirmada yeniden islenecek:\n"
+                    + "\n".join(detay_satirlari),
+                )
 
     pending_steps = planned_steps - resume_steps
     reusable_steps = set()
@@ -1525,7 +1573,10 @@ def run(preselected_selection: Optional[str] = None):
         if full_pipeline_requested:
             llm_ana, llm_cila, step_llm_overrides = _setup_full_pipeline_llms(pending_steps)
         else:
-            llm_ana, llm_cila, step_llm_overrides = _setup_selected_llms(pending_steps)
+            llm_ana, llm_cila, step_llm_overrides = _setup_selected_llms(
+                pending_steps,
+                summary_steps=requested_steps,
+            )
     except Exception as e:
         logger.error(f"❌ LLM baslatilamadi: {e}")
         return
@@ -1547,4 +1598,4 @@ def run(preselected_selection: Optional[str] = None):
             satir += f" | Sure: {bilgi.get('duration')}"
         print(satir)
     print(TERMINAL_AYIRICI)
-    logger.info("Tum otomasyon sureci tamamlandi. Ciktilar 00_Outputs altindaki grup klasorlerine yazildi.")
+    logger.info("Tum otomasyon sureci tamamlandi. Ciktilar workspace/00_Outputs altindaki grup klasorlerine yazildi.")

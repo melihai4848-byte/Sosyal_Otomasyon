@@ -5,7 +5,7 @@ Bu paket, hazir bir video klasorunu okuyup YouTube Data API uzerinden videoyu he
 Beklenen klasor yapisi:
 
 ```text
-input/youtube_uploads/video_adi/
+workspace/uploader/input/youtube_uploads/video_adi/
   video.mp4
   subtitle_tr.srt
   subtitle_en.srt
@@ -20,10 +20,10 @@ input/youtube_uploads/video_adi/
 Kisa kullanim:
 
 ```powershell
-python main.py --folder input\youtube_uploads\video_adi
+python main.py --folder workspace\uploader\input\youtube_uploads\video_adi
 python main.py --batch
 python main.py --watch
-python main.py --folder input\youtube_uploads\video_adi --dry-run
+python main.py --folder workspace\uploader\input\youtube_uploads\video_adi --dry-run
 ```
 
 Onemli guvenlik notu:

@@ -1,18 +1,18 @@
 {
-  "input_root": "input/youtube_uploads",
-  "success_root": "success/youtube_uploaded",
-  "failed_root": "failed/youtube_failed",
-  "state_file": "state/youtube_upload_state.json",
-  "lock_dir": "state/youtube_locks",
-  "log_file": "logs/youtube_draft_uploader.log",
+  "input_root": "workspace/uploader/input/youtube_uploads",
+  "success_root": "workspace/uploader/success/youtube_uploaded",
+  "failed_root": "workspace/uploader/failed/youtube_failed",
+  "state_file": "workspace/state/youtube_upload_state.json",
+  "lock_dir": "workspace/state/youtube_locks",
+  "log_file": "workspace/logs/youtube_draft_uploader.log",
   "preferred_metadata_language": "Türkçe",
   "allow_scheduled_publish": false,
   "move_successful_folders": true,
   "move_failed_folders": true,
   "open_browser_for_oauth": true,
   "oauth": {
-    "client_secret_file": "00_Inputs/oauth/google_client_secret.json",
-    "token_file": "00_Inputs/oauth/youtube_draft_upload_token.json"
+    "client_secret_file": "workspace/00_Inputs/oauth/google_client_secret.json",
+    "token_file": "workspace/00_Inputs/oauth/youtube_draft_upload_token.json"
   },
   "watch": {
     "poll_interval_seconds": 30

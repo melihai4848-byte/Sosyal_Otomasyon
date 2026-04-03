@@ -4,14 +4,13 @@ import os
 import sys
 from functools import lru_cache
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+from moduller.project_paths import LOGS_DIR, ensure_workspace_structure
+
+ensure_workspace_structure()
 
 LOG_LEVEL = getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO)
-LOG_FILE_PATH = LOG_DIR / "automation.log"
+LOG_FILE_PATH = LOGS_DIR / "automation.log"
 
 _FORMATTER = logging.Formatter(
     fmt="%(asctime)s | %(levelname)-8s | [%(name)s] -> %(message)s",

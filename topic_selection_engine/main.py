@@ -289,7 +289,7 @@ def run_from_menu():
     since_days = 14
     limit = 200
     output_dir = str(output_group_dir("research"))
-    print("Varsayilan ayarlar kullaniliyor: son 14 gun, maksimum 200 sinyal, cikti klasoru 00_Outputs/400_Arastirma_Sonuclari.")
+    print("Varsayilan ayarlar kullaniliyor: son 14 gun, maksimum 200 sinyal, cikti klasoru workspace/00_Outputs/400_Arastirma_Sonuclari.")
     use_recommended = prompt_module_llm_plan("401", needs_smart=True)
     if use_recommended:
         saglayici, model_adi = get_module_recommended_llm_config("401", "smart")

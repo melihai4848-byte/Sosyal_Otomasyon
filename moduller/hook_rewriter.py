@@ -62,6 +62,11 @@ KRITIK KURALLAR:
 - Asiri clickbait yapma; videonun gercek vaadine sadik kal.
 - En az 3 alternatif hook uret.
 
+İÇERİK TÜRÜNE GÖRE ADAPTASYON (ÖNEMLİ):
+- EĞER VİDEO BİR VLOG / DİNAMİK KURGU İSE: İlk kısımlardaki çok kısa ve alakasız gibi duran replikler "kargaşa" değil, videonun ilginç anlarından oluşan bir "teaser/fast hook" kurgusudur. Bunu zayıf bir hook sayıp tamamen iptalini önerme, teaser mantığını koruyup merakı nasıl artıracağına odaklan.
+- EĞER VİDEO BİR PODCAST VEYA İÇERİK ANLATIMI İSE: Sabit bir giriş bekleyebilirsin. Eğer başta uzun ve ölü diyaloglar veya kopukluklar varsa bunu gerçek bir sorun olarak eleştirebilir ve konuya daha vurucu nasıl girebileceği yönünde fikirler üretebilirsin.
+- Görevin: Transkripte bakarak videonun türünü hisset ve önceliklerini buna göre esnet.
+
 JSON SEMASI:
 {{
   "current_hook_problem": "",
@@ -110,6 +115,11 @@ KRITIK KURALLAR:
 - Her hook adayi farkli bir psikolojik aci kullansin: risk, odul, beklenmeyen sonuc, gizli maliyet, sert karsitlik, itiraz kirma gibi.
 - Videonun gercek vaadini bozma.
 
+İÇERİK TÜRÜNE GÖRE ADAPTASYON (ÖNEMLİ):
+- EĞER VİDEO BİR VLOG / DİNAMİK KURGU İSE: İlk kısımlardaki çok kısa ve alakasız gibi duran replikler "kargaşa" değil, videonun ilginç anlarından oluşan bir "teaser/fast hook" kurgusudur. Bunu zayıf bir hook sayıp tamamen iptalini önerme, teaser mantığını koruyup merakı nasıl artıracağına odaklan.
+- EĞER VİDEO BİR PODCAST VEYA İÇERİK ANLATIMI İSE: Sabit bir giriş bekleyebilirsin. Eğer başta uzun ve ölü diyaloglar veya kopukluklar varsa bunu gerçek bir sorun olarak eleştirebilir ve konuya daha vurucu nasıl girebileceği yönünde fikirler üretebilirsin.
+- Görevin: Transkripte bakarak videonun türünü hisset ve önceliklerini buna göre esnet.
+
 JSON SEMASI:
 {{
   "current_hook_problem": "",
@@ -151,6 +161,11 @@ KRITIK KURALLAR:
 - En az 3 alternatif hook uret.
 - "opening_flow" gercekten editorun kullanabilecegi kadar somut olsun.
 - Asiri clickbait yapma; videonun gercek vaadine sadik kal.
+
+İÇERİK TÜRÜNE GÖRE ADAPTASYON (ÖNEMLİ):
+- EĞER VİDEO BİR VLOG / DİNAMİK KURGU İSE: İlk kısımlardaki çok kısa ve alakasız gibi duran replikler "kargaşa" değil, videonun ilginç anlarından oluşan bir "teaser/fast hook" kurgusudur. Bunu zayıf bir hook sayıp tamamen iptalini önerme, teaser mantığını koruyup merakı nasıl artıracağına odaklan.
+- EĞER VİDEO BİR PODCAST VEYA İÇERİK ANLATIMI İSE: Sabit bir giriş bekleyebilirsin. Eğer başta uzun ve ölü diyaloglar veya kopukluklar varsa bunu gerçek bir sorun olarak eleştirebilir ve konuya daha vurucu nasıl girebileceği yönünde fikirler üretebilirsin.
+- Görevin: Transkripte bakarak videonun türünü hisset ve önceliklerini buna göre esnet.
 
 JSON SEMASI:
 {{
